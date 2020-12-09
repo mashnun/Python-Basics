@@ -1,0 +1,182 @@
+1#
+import requests_with_caching
+import json
+
+def get_movies_from_tastedive(input_string):
+    base_url = "https://tastedive.com/api/similar"
+    param_dic = {}
+    param_dic['q'] = input_string
+    param_dic['type'] = "movies"
+    param_dic['limit'] = 5
+    tastedive_resp = requests_with_caching.get(base_url, params = param_dic)
+    print(tastedive_resp.url)
+    return tastedive_resp.json()
+
+
+
+2#
+import requests_with_caching
+import json
+
+def get_movies_from_tastedive(input_string):
+    base_url = "https://tastedive.com/api/similar"
+    param_dic = {}
+    param_dic['q'] = input_string
+    param_dic['type'] = "movies"
+    param_dic['limit'] = "5"
+    tastedive_resp = requests_with_caching.get(base_url, params = param_dic)
+    print(tastedive_resp.url)
+    return tastedive_resp.json()
+
+def extract_movie_titles(Name1):
+    return [x["Name"] for x in Name1["Similar"]["Results"]]
+    # returns a list [ of 5 movies ] 
+
+
+3#
+import requests_with_caching
+import json
+
+def get_movies_from_tastedive(input_string):
+    base_url = "http://tastedive.com/api/similar"
+    param_dic = {}
+    param_dic['q'] = input_string
+    param_dic['type'] = "movies"
+    param_dic['limit'] = "5"
+    tastedive_resp = requests_with_caching.get(base_url, params = param_dic)
+    print(tastedive_resp.url)
+    return tastedive_resp.json()
+
+def extract_movie_titles(string):
+    input_dic = get_movies_from_tastedive(string)
+    print(input_dic)
+    parsing_list = input_dic['Similar']['Results']
+    output_list = [value['Name'] for value in parsing_list]
+    return output_list
+
+def get_related_titles(movie_list):
+    output_list = []
+    storing_list = []
+    for i in movie_list:
+        storing_list = extract_movie_titles(i)
+        for j in storing_list:
+            if j not in output_list:
+                output_list.append(j)
+    return output_list
+
+
+4#
+import requests_with_caching
+import json
+
+def get_movie_data(string):
+    base_url = "http://www.omdbapi.com/"
+    param_dic = {}
+    param_dic['t'] = string
+    param_dic['r'] = "json"
+    omdbapi_resp = requests_with_caching.get(base_url, params = param_dic)
+    print(omdbapi_resp.url)
+    return omdbapi_resp.json()
+print(get_movie_data("Baby Mama"))
+
+
+
+5#
+import requests_with_caching
+import json
+
+def get_movie_data(string):
+    base_url = "http://www.omdbapi.com/"
+    param_dic = {}
+    param_dic['t'] = string
+    param_dic['r'] = "json"
+    omdbapi_resp = requests_with_caching.get(base_url, params = param_dic)
+    print(omdbapi_resp.url)
+    return omdbapi_resp.json()
+print(get_movie_data("Baby Mama"))
+
+def get_movie_rating(movie):
+    scores = 0
+    k = movie["Title"]
+    rating = 0
+    sorted_list = sorted(movie["Ratings"], key = lambda x: x['Value'])
+    for n in range(len(sorted_list)):
+        if sorted_list[n]['Source'] == "Rotten Tomatoes":
+            scores = sorted_list[n]['Value']
+            if scores != 0:           
+                str(scores)
+                rating = scores.strip("%")
+            else:
+                rating = 0
+    return int(rating)
+#get_movie_rating(get_movie_data("Deadpool 2"))
+
+6#
+import requests_with_caching
+import json
+
+def get_movies_from_tastedive(input_string):
+    base_url = "http://tastedive.com/api/similar"
+    param_dic = {}
+    param_dic['q'] = input_string
+    param_dic['type'] = "movies"
+    param_dic['limit'] = "5"
+    tastedive_resp = requests_with_caching.get(base_url, params = param_dic)
+    print(tastedive_resp.url)
+    return tastedive_resp.json()
+
+def extract_movie_titles(Name1):
+    return [x["Name"] for x in Name1["Similar"]["Results"]]
+    # returns a list [ of 5 movies ] 
+
+def get_related_titles(title_list):
+    #gets 5 related movies for each movie from tastedrive
+    #makes a list from extract_movie_titles(name) for each of the 5    
+    related_movies = []
+    for movie in title_list:
+        films = extract_movie_titles(get_movies_from_tastedive(movie))
+        related_movies = related_movies + films     
+    related_movies = list(set(related_movies))
+    # returns distinct list of related movies (set)
+    return related_movies
+
+def get_movie_data(string):
+    base_url = "http://www.omdbapi.com/"
+    param_dic = {}
+    param_dic['t'] = string
+    param_dic['r'] = "json"
+    omdbapi_resp = requests_with_caching.get(base_url, params = param_dic)
+    print(omdbapi_resp.url)
+    return omdbapi_resp.json()
+print(get_movie_data("Baby Mama"))
+
+def get_movie_rating(movie):
+    scores = 0
+    k = movie["Title"]
+    rating = 0
+    sorted_list = sorted(movie["Ratings"], key = lambda x: x['Value'])
+    for n in range(len(sorted_list)):
+        if sorted_list[n]['Source'] == "Rotten Tomatoes":
+            scores = sorted_list[n]['Value']
+            if scores != 0:           
+                str(scores)
+                rating = scores.strip("%")
+            else:
+                rating = 0
+    return int(rating)
+
+def get_sorted_recommendations(movie_list):
+    result = []  
+    similar_titles = []
+    ratings_dict = {}
+    scores_dict = {}
+    
+    similar_titles = get_related_titles(movie_list)
+    for movie in similar_titles:
+        ratings_dict[movie] = get_movie_rating(get_movie_data(movie))
+        scores_dict.update(ratings_dict)
+    
+    result = sorted(scores_dict.items(), key = lambda x: x[1], reverse = True)
+    return result
+
+
